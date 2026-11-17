@@ -195,7 +195,7 @@ textarea.copy{font-family:var(--f-mono);font-size:12.5px;min-height:140px}
 .c-hdr span:nth-child(n+3){text-align:right}
 .c-hdr span:nth-child(3){padding-right:22px}
 .mk{text-align:right;font-family:var(--f-mono);font-variant-numeric:tabular-nums;font-size:13px;font-weight:600;color:var(--berry)}
-html,body{overscroll-behavior-y:contain}
+html,body{overscroll-behavior-y:none}
 .ptr{position:fixed;left:50%;top:env(safe-area-inset-top,0px);z-index:20;display:grid;justify-items:center;gap:2px;pointer-events:none;transform:translate(-50%,-90px);opacity:0;transition:transform .25s ease,opacity .25s ease}
 .ptr.pulling{transition:none}
 .ptr svg{width:56px;height:56px;color:var(--ink)}
@@ -617,7 +617,7 @@ const cmsg=h=>{const m=document.getElementById("c-msg");if(m)m.innerHTML=h};
 function applyStd(std,note){STD=std;COST_DEF=std.def;try{localStorage.setItem("pallas-std",JSON.stringify(std))}catch(e){}
   C=clone(COST_DEF);Object.values(C.prep).forEach(p=>{if(p.make==null)p.make=p.batch});saveCost();setUpd();rerenderCost();if(note)cmsg(note)}
 async function syncStd(){if(!API)return;try{const r=await fetch(API,{cache:"no-store"});const j=await r.json();
-  if(j&&j.ok&&j.std&&j.std.def&&tms(j.std)>tms(STD)){const lost=dirty();applyStd(j.std,`<div class="msg ok">已載入最新標準（${ymd(j.std.updated)}${j.std.by?"・"+j.std.by:""}）。${lost?"這支手機之前沒上傳的修改已被取代。":""}</div>`)}}catch(e){}}
+  if(j&&j.ok&&j.std&&j.std.def&&tms(j.std)>tms(STD)){const lost=dirty();applyStd(j.std,lost?`<div class="msg ok">已載入最新標準（${ymd(j.std.updated)}${j.std.by?"・"+j.std.by:""}）。這支手機之前沒上傳的修改已被取代。</div>`:"")}}catch(e){}}
 function openPub(){const m=document.getElementById("pub-modal");document.getElementById("pub-msg").textContent="";document.getElementById("pub-ok").disabled=false;
   const pin=document.getElementById("pub-pin");pin.value="";try{document.getElementById("pub-by").value=localStorage.getItem("pallas-by")||""}catch(e){}
   m.hidden=false;pin.focus()}
@@ -675,8 +675,8 @@ render();route();syncStd();
   const set=(d,txt)=>{el.style.transform=`translate(-50%,${d-64}px)`;el.style.opacity=Math.min(1,d/40);if(txt)tx.textContent=txt};
   const reset=()=>{el.classList.remove("pulling","run");el.style.transform="";el.style.opacity="";pull=0;y0=null};
   addEventListener("touchstart",e=>{if(busy||DR||window.scrollY>0||e.touches.length>1||e.target.closest("input,select,textarea,.grip"))return;y0=e.touches[0].clientY},{passive:true});
-  addEventListener("touchmove",e=>{if(y0==null)return;const dy=e.touches[0].clientY-y0;if(dy<=0||window.scrollY>0){if(pull)reset();y0=dy<=0?y0:null;return}
-    pull=Math.min(120,dy*.5);el.classList.add("pulling");set(pull,pull>=TH?"放開更新":"下拉更新")},{passive:true});
+  addEventListener("touchmove",e=>{if(y0==null)return;const dy=e.touches[0].clientY-y0;if(dy>0&&window.scrollY<=0&&e.cancelable)e.preventDefault();if(dy<=0||window.scrollY>0){if(pull)reset();y0=dy<=0?y0:null;return}
+    pull=Math.min(120,dy*.5);el.classList.add("pulling");set(pull,pull>=TH?"放開更新":"下拉更新")},{passive:false});
   addEventListener("touchend",()=>{if(y0==null&&!pull)return;if(pull>=TH){busy=true;el.classList.remove("pulling");el.classList.add("run");set(TH,"攪拌中…");
       setTimeout(()=>{try{location.reload()}catch(e){}setTimeout(()=>{busy=false;reset();route()},2500)},900)}else reset();y0=null});
   addEventListener("touchcancel",()=>{if(!busy)reset()});

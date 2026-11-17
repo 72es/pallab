@@ -196,6 +196,8 @@ textarea.copy{font-family:var(--f-mono);font-size:12.5px;min-height:140px}
 .c-hdr span:nth-child(3){padding-right:22px}
 .mk{text-align:right;font-family:var(--f-mono);font-variant-numeric:tabular-nums;font-size:13px;font-weight:600;color:var(--berry)}
 html,body{overscroll-behavior-y:none}
+.wrap.ptr-anim{transition:transform .28s cubic-bezier(.2,.8,.3,1)}
+.wrap{will-change:auto}
 .ptr{position:fixed;left:50%;top:env(safe-area-inset-top,0px);z-index:20;display:grid;justify-items:center;gap:2px;pointer-events:none;transform:translate(-50%,-90px);opacity:0;transition:transform .25s ease,opacity .25s ease}
 .ptr.pulling{transition:none}
 .ptr svg{width:56px;height:56px;color:var(--ink)}
@@ -670,14 +672,15 @@ document.getElementById("copy").onclick=async()=>{const t=textOf(),box=document.
 function updLine(){const l=document.getElementById("line");if(l)l.href="https://line.me/R/share?text="+encodeURIComponent(textOf())}
 document.getElementById("o-note").addEventListener("input",updLine);
 render();route();syncStd();
-/* 下拉更新 */
-(()=>{const el=document.getElementById("ptr"),tx=document.getElementById("ptr-t");let y0=null,pull=0,busy=false;const TH=70;
-  const set=(d,txt)=>{el.style.transform=`translate(-50%,${d-64}px)`;el.style.opacity=Math.min(1,d/40);if(txt)tx.textContent=txt};
-  const reset=()=>{el.classList.remove("pulling","run");el.style.transform="";el.style.opacity="";pull=0;y0=null};
-  addEventListener("touchstart",e=>{if(busy||DR||window.scrollY>0||e.touches.length>1||e.target.closest("input,select,textarea,.grip"))return;y0=e.touches[0].clientY},{passive:true});
+/* 下拉更新：頁面跟著手指往下（有阻尼），鍋子出現在上方空出來的位置 */
+(()=>{const el=document.getElementById("ptr"),tx=document.getElementById("ptr-t"),pg=document.querySelector(".wrap");let y0=null,pull=0,busy=false;const TH=80,HOLD=90;
+  const set=(d,txt)=>{pg.style.transform=d?`translateY(${d}px)`:"";el.style.transform=`translate(-50%,${d-86}px)`;el.style.opacity=Math.min(1,d/45);if(txt)tx.textContent=txt};
+  const anim=on=>{pg.classList.toggle("ptr-anim",on);el.classList.toggle("pulling",!on)};
+  const reset=()=>{anim(true);el.classList.remove("run");set(0);el.style.transform="";el.style.opacity="";pull=0;y0=null;setTimeout(()=>{if(!pull)pg.style.transform=""},300)};
+  addEventListener("touchstart",e=>{if(busy||DR||window.scrollY>0||e.touches.length>1||e.target.closest("input,select,textarea,.grip,.modal"))return;y0=e.touches[0].clientY},{passive:true});
   addEventListener("touchmove",e=>{if(y0==null)return;const dy=e.touches[0].clientY-y0;if(dy>0&&window.scrollY<=0&&e.cancelable)e.preventDefault();if(dy<=0||window.scrollY>0){if(pull)reset();y0=dy<=0?y0:null;return}
-    pull=Math.min(120,dy*.5);el.classList.add("pulling");set(pull,pull>=TH?"放開更新":"下拉更新")},{passive:false});
-  addEventListener("touchend",()=>{if(y0==null&&!pull)return;if(pull>=TH){busy=true;el.classList.remove("pulling");el.classList.add("run");set(TH,"攪拌中…");
+    pull=dy*.6/(1+dy/650);anim(false);set(pull,pull>=TH?"放開更新":"下拉更新")},{passive:false});
+  addEventListener("touchend",()=>{if(y0==null&&!pull)return;if(pull>=TH){busy=true;anim(true);el.classList.add("run");set(HOLD,"攪拌中…");
       setTimeout(()=>{try{location.reload()}catch(e){}setTimeout(()=>{busy=false;reset();route()},2500)},900)}else reset();y0=null});
   addEventListener("touchcancel",()=>{if(!busy)reset()});
 })();

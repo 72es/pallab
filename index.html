@@ -1,0 +1,693 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="PalLab">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-180.png">
+<title>PalLab</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style id="app-css">
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0}img{max-width:100%}
+/* Layout: app-style list; each row is a collapsible item — left: type/%/name + flavor line, right: vendor + unit price */
+:root{
+  --bg:#f4f2f1; --surface:#ffffff; --ink:#271a16; --muted:#7a6a62; --line:#e4dcd6;
+  --berry:#a8244f; --berry-soft:#f7e4eb; --ok:#3f7d4e; --warn:#a86f00; --danger:#c23a2b;
+  --radar-fill:rgba(168,36,79,.2); --grid:#dbd0c9;
+  --f-body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#15100e; --surface:#211815; --ink:#f2e9e4; --muted:#b3a199; --line:#382a25;
+  --berry:#ec6f97; --berry-soft:#3d1b27; --ok:#7cc48d; --warn:#e3b64a; --danger:#c94a3b;
+  --radar-fill:rgba(236,111,151,.22); --grid:#4a3933; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#15100e; --surface:#211815; --ink:#f2e9e4; --muted:#b3a199; --line:#382a25;
+  --berry:#ec6f97; --berry-soft:#3d1b27; --ok:#7cc48d; --warn:#e3b64a; --danger:#c94a3b;
+  --radar-fill:rgba(236,111,151,.22); --grid:#4a3933; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.55}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:10}
+.wrap{max-width:640px;margin:0 auto;padding-block:16px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+header>*{min-width:0}
+.upd{white-space:nowrap;font-variant-numeric:tabular-nums}
+header h1{font-size:24px;font-weight:900;margin:0;text-wrap:balance}
+header p{margin:4px 0 0;font-size:12.5px;color:var(--muted)}
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding:10px 0;display:grid;gap:8px}
+.chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;font:inherit;font-size:13px;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:5px 12px;border-radius:999px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.chip:focus-visible,summary:focus-visible{outline:2px solid var(--berry);outline-offset:2px}
+.sels{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.sel{display:grid;gap:2px;min-width:0}
+.sel span{font-size:11px;color:var(--muted);letter-spacing:.06em}
+.sel select{font:inherit;font-size:14px;width:100%;min-width:0;padding:7px 28px 7px 10px;border:1px solid var(--line);border-radius:6px;background:var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23999'/%3E%3C/svg%3E") no-repeat right 10px center;color:var(--ink);appearance:none;-webkit-appearance:none}
+.sel select:focus-visible{outline:2px solid var(--berry);outline-offset:1px}
+.count{font-size:12px;color:var(--muted)}
+.list{display:grid;gap:8px}
+details{scroll-margin-top:150px;background:var(--surface);border:1px solid var(--line);border-radius:8px}
+details[open]{border-color:var(--berry)}
+summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:1fr auto;gap:2px 12px;padding:11px 12px;align-items:baseline}
+summary::-webkit-details-marker{display:none}
+.l1{min-width:0;font-weight:700;font-size:15px;display:flex;flex-wrap:wrap;align-items:baseline;gap:0 6px}
+.type{font-size:11px;font-weight:700;letter-spacing:.04em;color:var(--berry);background:var(--berry-soft);padding:1px 6px;border-radius:3px;align-self:center}
+.type.t-mix{color:var(--muted);background:transparent;border:1px solid var(--line)}
+.brand{font-weight:500;color:var(--muted)}
+.pct{font-family:var(--f-mono);font-weight:600}
+.r1{text-align:right;font-size:12.5px;color:var(--muted);white-space:nowrap}
+.l2{min-width:0;font-size:13px;color:var(--muted)}
+.l2 b{color:var(--ink);font-weight:500}
+.r2{text-align:right;white-space:nowrap;font-family:var(--f-mono);font-variant-numeric:tabular-nums;font-size:14px;font-weight:600}
+.r2 small{font-family:var(--f-body);font-size:10.5px;font-weight:500;margin-left:3px;padding:0 4px;border-radius:3px}
+.s-tw{color:var(--ok);border:1px solid currentColor}
+.s-ref{color:var(--muted);border:1px solid var(--line)}
+.r2.ask{color:var(--muted);font-family:var(--f-body);font-weight:500;font-size:13px}
+.detail{padding:0 12px 14px;display:grid;gap:12px}
+.en{font-size:12.5px;color:var(--muted)}
+.grid{display:grid;grid-template-columns:132px 1fr;gap:12px;align-items:start}
+.grid>div{min-width:0}
+@media (max-width:420px){.grid{grid-template-columns:1fr}.radar{max-width:180px;margin:0 auto}}
+.radar svg{width:100%;height:auto;display:block}
+.src{font-size:10.5px;color:var(--muted);text-align:center}
+dl{margin:0;display:grid;gap:6px;font-size:13.5px}
+dt{font-size:11.5px;color:var(--muted);letter-spacing:.06em}
+dd{margin:0}
+.pc{display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:13px}
+@media (max-width:420px){.pc{grid-template-columns:1fr}}
+.pc div{background:var(--bg);border-radius:5px;padding:7px 9px}
+.pc b{display:block;font-size:11.5px}
+.ok b{color:var(--ok)}.ng b{color:var(--warn)}
+.tags{display:flex;flex-wrap:wrap;gap:5px}
+.tag{font-size:11px;padding:1px 7px;border-radius:3px;border:1px solid var(--line);color:var(--muted)}
+a{color:var(--berry)}
+.picks{margin-top:14px;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:4px 12px 10px}
+.picks h2{font-size:15px;margin:8px 0 2px}
+.pick{display:grid;grid-template-columns:72px 1fr;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+.pick:last-of-type{border-bottom:0}
+.pick>*{min-width:0}
+.pick b{font-size:11.5px;color:var(--berry);padding-top:2px}
+.pick p{margin:0}
+.pick a{color:var(--ink);text-decoration-color:var(--berry);text-underline-offset:3px}
+.pick a:hover strong{color:var(--berry)}
+.pnote{margin:6px 0 0;font-size:12px;color:var(--muted)}
+.foot{margin-top:22px;font-size:12px;color:var(--muted);display:grid;gap:4px}
+.foot p{margin:0}
+.inc{display:inline-block;font-size:10.5px;font-weight:700;color:var(--ok);border:1px solid currentColor;border-radius:3px;padding:0 4px;margin-left:4px}
+.addrow{display:flex;justify-content:flex-end}
+.btn{font:inherit;font-size:14px;font-weight:700;border:1px solid var(--ink);background:var(--ink);color:var(--bg);padding:8px 14px;border-radius:6px;cursor:pointer}
+a.btn{text-decoration:none;display:inline-block}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn:disabled{opacity:.45;cursor:default}
+.btn:focus-visible{outline:2px solid var(--berry);outline-offset:2px}
+.cartbar{position:fixed;left:0;right:0;bottom:0;z-index:8;background:var(--ink);color:var(--bg);padding-block:10px calc(10px + env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;justify-content:space-between;align-items:center;gap:12px}
+.cartbar .btn{background:var(--bg);color:var(--ink);border-color:var(--bg)}
+.wrap{padding-bottom:90px}
+.order h2{font-size:20px;margin:6px 0 4px}
+.oitem{display:grid;grid-template-columns:1fr auto;gap:4px 10px;padding:10px 0;border-bottom:1px solid var(--line);align-items:center}
+.oitem>div{min-width:0}
+.oitem .nm{font-weight:700;font-size:14.5px}
+.oitem .sub{font-size:12px;color:var(--muted)}
+.qty{display:flex;align-items:center;gap:6px}
+.qty button{font:inherit;width:32px;height:32px;border-radius:6px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer;font-size:16px}
+.qty output{font-family:var(--f-mono);min-width:2ch;text-align:center;font-weight:600}
+.rm{font:inherit;font-size:12px;color:var(--muted);background:none;border:0;text-decoration:underline;cursor:pointer;padding:0}
+.form{display:grid;gap:10px;margin-top:14px}
+.form label{display:grid;gap:3px;font-size:12px;color:var(--muted)}
+.form input,.form textarea{font:inherit;font-size:15px;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:8px 10px;width:100%}
+.actions{display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;margin-top:4px}
+.msg{font-size:13.5px;padding:10px 12px;border-radius:6px;background:var(--berry-soft);color:var(--ink)}
+.msg.ok{background:transparent;border:1px solid var(--ok)}
+.empty{color:var(--muted);font-size:14px;padding:18px 0}
+textarea.copy{font-family:var(--f-mono);font-size:12.5px;min-height:140px}
+[hidden]{display:none!important}
+.tabs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-top:12px;background:var(--line);padding:3px;border-radius:8px}
+.tabs a{text-align:center;padding:7px 0;border-radius:6px;font-size:14px;font-weight:700;color:var(--muted);text-decoration:none}
+.tabs a[aria-current="page"]{background:var(--surface);color:var(--ink)}
+.tabs a:focus-visible{outline:2px solid var(--berry);outline-offset:1px}
+.cost{display:grid;gap:14px;margin-top:14px}
+.c-intro{font-size:13px;color:var(--muted);display:grid;gap:8px}
+.c-intro p{margin:0}
+.c-actions{display:flex;flex-wrap:wrap;gap:8px}
+.c-actions .btn{font-size:13px;padding:6px 12px}
+.c-card{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px}
+.c-card h3{margin:0;font-size:17px;font-weight:900}
+.c-sec{font-size:15px;font-weight:900;margin:8px 0 0}
+.c-head{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.c-head>*{min-width:0}
+.kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:10px 0 6px}
+.kpi{background:var(--bg);border-radius:6px;padding:7px 9px;min-width:0}
+.kpi span{display:block;font-size:11px;color:var(--muted)}
+.kpi b{font-family:var(--f-mono);font-variant-numeric:tabular-nums;font-size:18px}
+.kpi small{display:block;font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+.kpi small.up{color:var(--warn)}.kpi small.down{color:var(--ok)}
+.c-rows{display:grid}
+.c-row .fld .u{display:inline-block;min-width:18px}
+.c-row{display:grid;grid-template-columns:22px minmax(0,1fr) auto 50px 26px;gap:6px;align-items:center;padding:6px 0;border-top:1px solid var(--line);background:var(--surface)}
+.c-row .nm{font-size:14px;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.c-row .nm small{font-size:11px;color:var(--muted);margin-left:5px}
+.c-row .sub{text-align:right;font-family:var(--f-mono);font-variant-numeric:tabular-nums;font-size:13px}
+.c-row.dragging{position:relative;z-index:2;box-shadow:0 4px 14px rgba(0,0,0,.18);border-radius:6px}
+.grip{width:22px;height:30px;border:0;background:none;color:var(--muted);cursor:grab;touch-action:none;padding:0;display:grid;place-items:center;border-radius:4px}
+.grip:active{cursor:grabbing}
+.grip svg{width:10px;height:16px;fill:currentColor}
+.rmx{width:26px;height:26px;border:0;background:none;color:var(--muted);cursor:pointer;font-size:18px;line-height:1;border-radius:4px;padding:0}
+.rmx:hover{color:var(--warn)}
+.grip:focus-visible,.rmx:focus-visible,.stab:focus-visible{outline:2px solid var(--berry);outline-offset:1px}
+.stabs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
+.stabs::-webkit-scrollbar{display:none}
+.stab{flex:none;font:inherit;font-size:13.5px;font-weight:700;border:1px solid var(--line);background:var(--surface);color:var(--muted);padding:5px 14px;border-radius:999px;cursor:pointer}
+.stab[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.btn.danger{background:var(--danger);border-color:var(--danger);color:#fff}
+.c-top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.c-top>*{min-width:0}
+.fld{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--muted);white-space:nowrap}
+.fld input{font:inherit;font-family:var(--f-mono);font-variant-numeric:tabular-nums;font-size:15px;width:58px;text-align:right;padding:5px 6px;border:1px solid var(--line);border-radius:5px;background:var(--surface);color:var(--ink)}
+.fld input:focus{outline:2px solid var(--berry);outline-offset:0;border-color:transparent}
+.fld input.changed{border-color:var(--warn);background:var(--berry-soft)}
+.c-add{display:flex;gap:6px;margin-top:8px;align-items:center}
+.c-add select{font:inherit;font-size:13.5px;flex:1;min-width:0;padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink)}
+.c-add .btn{font-size:13px;padding:6px 12px}
+.c-meta{display:flex;flex-wrap:wrap;gap:10px 16px;margin:8px 0 2px}
+.c-foot{font-size:12px;color:var(--muted)}
+.c-foot p{margin:0 0 4px}
+.c-ing .c-row{grid-template-columns:minmax(0,1fr) auto}
+.c-ing .c-row .nm{white-space:normal}
+.c-ing .c-row .nm small{display:block;margin-left:0}
+.c-ing .vals{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:6px 10px;align-items:center}
+.c-ing .uc{font-family:var(--f-mono);font-variant-numeric:tabular-nums;font-size:13px;min-width:74px;text-align:right}
+@media (max-width:420px){.c-ing .c-row{grid-template-columns:1fr}.c-ing .vals{justify-content:flex-start}}
+.c-meta{flex-wrap:nowrap;gap:8px;align-items:center}
+.c-meta .fld input{width:46px}
+.mk-in{margin-left:auto;color:var(--ink);font-weight:700;font-size:13px}
+.c-prow{grid-template-columns:22px minmax(0,1fr) auto 50px 44px 24px;gap:5px}
+.c-prow .nm{font-size:13.5px}
+.c-prow .nm small[data-o]{display:none}
+.c-prow .fld input{width:46px}
+.c-hdr{display:grid;grid-template-columns:22px minmax(0,1fr) 68px 50px 44px 24px;gap:5px;font-size:11px;color:var(--muted);padding:8px 0 4px}
+.c-hdr span:nth-child(n+3){text-align:right}
+.c-hdr span:nth-child(3){padding-right:22px}
+.mk{text-align:right;font-family:var(--f-mono);font-variant-numeric:tabular-nums;font-size:13px;font-weight:600;color:var(--berry)}
+html,body{overscroll-behavior-y:contain}
+.ptr{position:fixed;left:50%;top:env(safe-area-inset-top,0px);z-index:20;display:grid;justify-items:center;gap:2px;pointer-events:none;transform:translate(-50%,-90px);opacity:0;transition:transform .25s ease,opacity .25s ease}
+.ptr.pulling{transition:none}
+.ptr svg{width:56px;height:56px;color:var(--ink)}
+.ptr svg .acc{color:var(--berry)}
+.ptr span{font-size:11.5px;color:var(--muted);background:var(--bg);padding:1px 8px;border-radius:999px}
+.ptr .f2{opacity:0}
+.ptr.run .f1{animation:pf1 .6s steps(1,end) infinite}
+.ptr.run .f2{animation:pf2 .6s steps(1,end) infinite}
+@keyframes pf1{0%{opacity:1}50%{opacity:0}}
+@keyframes pf2{0%{opacity:0}50%{opacity:1}}
+@media (prefers-reduced-motion:reduce){.ptr.run .f1,.ptr.run .f2{animation:none}.ptr.run .f2{opacity:0}}
+:root{--go:#2f7d46}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--go:#3c9a58}}
+:root[data-theme="dark"]{--go:#3c9a58}
+.btn.go{background:var(--go);border-color:var(--go);color:#fff}
+.c-btns{display:flex;gap:6px;flex:none}
+.c-btns .btn{font-size:13.5px;padding:6px 12px}
+.modal{position:fixed;inset:0;z-index:30;background:rgba(0,0,0,.45);display:grid;place-items:center;padding:16px}
+.mbox{background:var(--surface);color:var(--ink);border-radius:10px;padding:18px;max-width:340px;width:100%;display:grid;gap:10px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+.mh{margin:0;font-size:17px;font-weight:900}
+.ms{margin:0;font-size:13px;color:var(--muted)}
+.ms:empty{display:none}
+.mact{display:flex;justify-content:flex-end;gap:8px}
+.mf{display:grid;gap:4px;font-size:12.5px;color:var(--muted)}
+.mf input{font:inherit;font-size:16px;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:8px 10px;width:100%}
+.mf input:focus{outline:2px solid var(--berry);outline-offset:0;border-color:transparent}</style>
+</head>
+<body>
+<template id="app-markup"><div class="wrap">
+  <header>
+    <div><h1>PalLab</h1><p>幻猻家珈琲 吧台工具</p></div>
+    <p class="upd">更新 <time id="upd-t"></time></p>
+  </header>
+  <nav class="tabs" aria-label="分頁">
+    <a href="#calc" id="tab-calc" aria-current="page">試算</a>
+    <a href="#ing" id="tab-ing">食材</a>
+    <a href="#buy" id="tab-list">採購</a>
+  </nav>
+
+  <div id="view-list">
+  <section class="picks" aria-label="先看結論">
+    <h2>先看結論</h2>
+    <div class="pick"><b>果香主力</b><p><a href="#item-11" data-go="11"><strong>Valrhona 孟加里 Manjari 64%</strong></a>：紅莓果香最清楚、甜苦平衡，摩卡與熱可可都穩。3kg 鈕扣，週轉剛好。</p></div>
+    <div class="pick"><b>日常＋裝飾</b><p><a href="#item-9" data-go="9"><strong>Cacao Barry 歐可亞 Ocoa 70%</strong></a>：可可為主、尾韻微酸，流動性高，杯緣沾巧克力和淋面最好用。聯馥目前唯一持續進口的巧克力，1kg 小包。</p></div>
+    <div class="pick"><b>水果飲品</b><p><a href="#item-16" data-go="16"><strong>Valrhona 覆盆子奇想</strong></a>：水果粉加可可脂，直接做覆盆子、草莓白可可拿鐵，免糖漿、顏色天然。</p></div>
+    <div class="pick"><b>風味限定</b><p><a href="#item-0" data-go="0"><strong>Cluizel 曼哥羅 Mangaro 71%</strong></a>：熱帶果、柑橘、薑餅，層次最豐富，適合季節限定飲品或甜點。</p></div>
+    <div class="pick"><b>無糖可可粉</b><p><a href="#item-20" data-go="20"><strong>Valrhona 頂級可可粉</strong></a>：100% 可可、21% 可可脂，好溶醇厚。可和 <a href="#item-10" data-go="10"><strong>Cacao Barry 防潮可可粉（Extra Brute）</strong></a>、<a href="#item-8" data-go="8"><strong>Cluizel 頂級可可粉</strong></a> 三家盲測，再依報價決定。</p></div>
+    <p class="pnote">Cacao Barry 其他巧克力聯馥已不再進口，果香款請優先向開元、元寶詢價。</p>
+  </section>
+
+  <div class="bar">
+    <div class="sels">
+      <label class="sel"><span>品牌</span><select id="f-brand">
+        <option value="all">全部</option><option value="cz">Cluizel · 元寶</option><option value="cb">Cacao Barry · 聯馥</option><option value="vr">Valrhona · 開元</option>
+      </select></label>
+      <label class="sel"><span>類型</span><select id="f-type">
+        <option value="all">全部</option><option value="單品">單品</option><option value="混調">混調</option><option value="配方">配方</option><option value="粉粒糊">可可粉／糊</option>
+      </select></label>
+      <label class="sel"><span>價格</span><select id="f-sort">
+        <option value="0">不排序</option><option value="1">低 → 高</option><option value="2">高 → 低</option>
+      </select></label>
+    </div>
+    <div class="count" id="count"></div>
+  </div>
+
+  <div class="list" id="list"></div>
+
+  </div>
+
+  <section class="order" id="view-order" hidden>
+    <button class="btn ghost" type="button" id="back">← 回到清單</button>
+    <h2>採購單</h2>
+    <div id="olist"></div>
+    <div class="form" id="oform">
+      <label for="o-note">備註<textarea id="o-note" rows="2" placeholder="用途、急迫性、想先索樣等"></textarea></label>
+      <div class="actions">
+        <a class="btn ghost" id="line" href="#" target="_blank" rel="noopener">開啟 LINE 分享</a>
+        <button class="btn" type="button" id="copy">複製採購單</button>
+      </div>
+      <div id="omsg" role="status"></div>
+      <textarea class="copy" id="copybox" readonly hidden aria-label="採購單文字"></textarea>
+    </div>
+  </section>
+
+  <section class="cost" id="view-calc" hidden></section>
+  <section class="cost" id="view-ing" hidden></section>
+
+  <div class="foot" id="foot">
+    <p><b>價格</b>：只列台灣代理報價或台灣市調實際售價，不放國外價格。「詢價」代表尚未取得台灣價格，三家代理皆為 B2B 詢價制。</p>
+    <p><b>五角圖</b>：0–5 分。Cacao Barry 的酸、果香、苦、可可四軸取自原廠官方數值，其餘依官方風味描述評估，試吃後可再校正。</p>
+    <p><b>類型</b>：單品＝單一產區或莊園；混調＝多產區調配；配方＝水果粉加可可脂等非傳統巧克力。</p>
+  </div>
+</div>
+<div class="ptr" id="ptr" aria-hidden="true">
+<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <ellipse cx="32" cy="31" rx="20" ry="4.5"/>
+  <path d="M12.5 32c0 13 7 21 19.5 21s19.5-8 19.5-21"/>
+  <path d="M12.6 35c-4 0-4.6 6 .4 6.5M51.4 35c4 0 4.6 6-.4 6.5"/>
+  <path d="M21 51l-2.5 5M43 51l2.5 5"/>
+  <path d="M24 44c2 1.5 4 1.5 6 0"/>
+  <g class="f1">
+    <path d="M17 31.5c3-1.8 5.5-1.8 8.5 0s5.5 1.8 8.5 0 5.5-1.8 8.5 0 4-1.2 5-.8"/>
+    <path d="M29 30L20 9"/><circle cx="19.2" cy="7.2" r="2.2"/>
+    <circle cx="39" cy="24" r="2"/><circle cx="44" cy="18.5" r="1.4"/>
+    <path class="acc" d="M49 8v5M46.5 10.5h5"/>
+  </g>
+  <g class="f2">
+    <path d="M17 31c1-.4 3.5-1.6 6.5.2s5.5 1.8 8.5 0 5.5-1.8 8.5 0 5.5 1.8 7-.2"/>
+    <path d="M35 30L44 9"/><circle cx="44.8" cy="7.2" r="2.2"/>
+    <circle cx="25" cy="24" r="2"/><circle cx="20" cy="18.5" r="1.4"/>
+    <path class="acc" d="M15 8v5M12.5 10.5h5"/>
+  </g>
+</svg><span id="ptr-t">下拉更新</span></div>
+<div class="cartbar" id="cartbar" hidden><span id="cartcount"></span><button class="btn" type="button" id="opencart">查看採購單</button></div>
+<div class="modal" id="pub-modal" hidden><form class="mbox" id="pub-form" role="dialog" aria-modal="true" aria-labelledby="pub-h" autocomplete="off">
+  <p class="mh" id="pub-h">食譜將永久更新，確認嗎</p>
+  <p class="ms">目前試算與食材的數字會成為全店新標準，所有人的手機都會更新。</p>
+  <label class="mf">店內 PIN<input id="pub-pin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="8" autocomplete="off"></label>
+  <label class="mf">你是誰（選填，記在更新紀錄）<input id="pub-by" type="text" maxlength="20" autocomplete="off"></label>
+  <div class="mact"><button class="btn ghost" type="button" id="pub-cancel">取消</button><button class="btn go" type="submit" id="pub-ok">確認更新</button></div>
+  <p class="ms" id="pub-msg" role="status"></p>
+</form></div></template>
+<script type="application/json" id="std">{"updated":"2026-11-17T00:00:00+08:00","by":"Ben","def":{"labor":3.6,"ing":{"ocoa":{"name":"歐可亞 巧克力","unit":"g","price":1300,"pack":1000,"note":""},"manjari":{"name":"孟加里 巧克力","unit":"g","price":4000,"pack":3000,"note":""},"sugar":{"name":"三溫糖","unit":"g","price":90,"pack":1000,"note":""},"milk":{"name":"牛奶","unit":"ml","price":78,"pack":963,"note":"1L 裝填 1000"},"cream":{"name":"明治鮮奶油","unit":"ml","price":440,"pack":1000,"note":"以 1g≈1ml 計"},"espresso":{"name":"義式豆","unit":"g","price":1260,"pack":800,"note":"熟豆成本；自烘可填 生豆單價÷(1−失重率)"},"cocoa":{"name":"可可粉","unit":"g","price":1300,"pack":1000,"note":""},"salt":{"name":"天日鹽","unit":"g","price":75,"pack":800,"note":""},"cup":{"name":"杯材（杯＋蓋）","unit":"組","price":0,"pack":0,"note":"選填；不算就留 0"}},"prep":{"ganache":{"name":"甘納許","batch":30,"mins":30,"make":30,"items":[{"ing":"ocoa","qty":9},{"ing":"manjari","qty":6},{"ing":"sugar","qty":2},{"ing":"milk","qty":3.5},{"ing":"cream","qty":4}]},"shave":{"name":"刨屑孟加里","batch":40,"mins":5,"make":40,"items":[{"ing":"manjari","qty":20,"per":"batch"}]},"chop":{"name":"切孟加里碎","batch":20,"mins":5,"make":20,"items":[{"ing":"manjari","qty":20,"per":"batch"}]}},"drinks":[{"id":"mocha","name":"摩卡","price":230,"items":[{"t":"i","ref":"espresso","qty":18,"note":"⚠ 萃 25ml 的實際粉量，請改成實際值"},{"t":"p","ref":"ganache","qty":1,"note":"含備料人力"},{"t":"i","ref":"milk","qty":155},{"t":"p","ref":"shave","qty":1,"note":"裝飾"},{"t":"l","ref":"labor","qty":4}]},{"id":"cocoa","name":"可可","price":230,"items":[{"t":"i","ref":"cocoa","qty":6},{"t":"p","ref":"ganache","qty":1,"note":"含備料人力"},{"t":"i","ref":"milk","qty":240},{"t":"i","ref":"cream","qty":10},{"t":"p","ref":"shave","qty":1,"note":"裝飾"},{"t":"l","ref":"labor","qty":4}]}]}}</script>
+<script id="app-js">document.body.appendChild(document.getElementById("app-markup").content.cloneNode(true));
+const D=[
+{t:"單品",fl:"熱帶果、柑橘、薑餅",mo:"明亮果酸",ps:"ref",b:"cz",name:"曼哥羅莊園黑巧克力",en:"Mangaro Plantation 71% · Madagascar",pct:"71%",cat:["單一莊園","迷你可可珠"],pack:"元寶 #20530 · 3kg",
+  notes:"入口熱帶水果，接著薑餅、可可、柑橘與辛香，尾韻帶微辣果香。",
+  use:"限定摩卡、甘納許夾心、配非洲水洗豆的甜點。",
+  pro:"層次最豐富；迷你珠小於 1/4g，打奶時融得快。",con:"酸香在大量牛奶裡會被稀釋，適合濃度高的飲品。",
+  r:[4,4.5,2.5,2.5,3],src:"評估",price:null,psrc:"待詢價",link:"https://www.treasurefoods.com.tw/portfolio-2/pinterest-list/48-mangaro-71-plantation-dark-chocolate"},
+{t:"單品",fl:"果酸、甘草、胡椒尾韻",mo:"甜潤好入口",ps:"ref",b:"cz",name:"安博尼雅黑巧克力",en:"Ambanja Grand Cru 64% · Madagascar",pct:"64%",cat:["單一產區","預訂品"],pack:"元寶 #20549 · 10kg×2/箱",
+  notes:"自然果酸，甘草、果香、草本交織，胡椒尾韻，熱巧克力般的甜感。",
+  use:"量大時的果香主力：熱可可、冰摩卡、店內甜點共用。",
+  pro:"64% 甜苦好入口；馬達加斯加果酸明確。",con:"10kg 預訂，小店週轉壓力大、需注意受潮與保存溫度。",
+  r:[3,3.5,3,2,3],src:"評估",price:null,psrc:"待詢價",link:"https://www.treasurefoods.com.tw/portfolio-2/pinterest-list/279-ambanja"},
+{t:"單品",fl:"紅果、甘草、青橄欖",mo:"成熟果乾調",ps:"ref",b:"cz",name:"羅安哥娜莊園黑巧克力",en:"Los Ancones 73% BIO · Dominican Rep.",pct:"73%",cat:["單一莊園","有機"],pack:"元寶 #20494 · 3kg（依原廠包裝）",
+  notes:"甘草、紅色水果、青橄欖，尾韻葡萄乾與杏桃乾。",
+  use:"黑巧熱可可、低糖甜點；適合想做「成熟果乾調」的飲品。",
+  pro:"有機認證，故事好說；果乾調耐牛奶。",con:"青橄欖、甘草調性對一般客人偏難懂。",
+  r:[3,3.5,2,3,3.5],src:"評估",price:null,psrc:"待詢價",link:"https://www.treasurefoods.com.tw/portfolio-2/pinterest-list/47-los-ancones-73-plantation-dark-chocolate"},
+{t:"單品",fl:"烘烤、辛香、熱帶果",mo:"苦感爽快",ps:"ref",b:"cz",name:"格拉辛達莊園黑巧克力",en:"Vila Gracinda 73% · São Tomé",pct:"73%",cat:["單一莊園"],pack:"元寶 #20579 · 3kg（依原廠包裝）",
+  notes:"強烈烘烤感與爽快苦味，在果酸、辛香、木質之間平衡，帶熱帶果與甘草。",
+  use:"配深焙豆的摩卡、苦甜系甜點。",
+  pro:"烘烤調與咖啡最搭，不搶戲。",con:"果香不是主角，要明顯果酸請選曼哥羅。",
+  r:[3,3,2,3.5,3.5],src:"評估",price:null,psrc:"待詢價",link:"https://www.treasurefoods.com.tw/portfolio-2/pinterest-list/49-vila-gracinda-73-plantation-dark-chocolate"},
+{t:"單品",fl:"乾果、紅果、焦糖",mo:"圓潤平衡",ps:"ref",b:"cz",name:"瑞加羅莊園黑巧克力",en:"Riachuelo 70% · Brazil",pct:"70%",cat:["單一莊園"],pack:"元寶 #20586 · 3kg（依原廠包裝）",
+  notes:"烤可可、乾果、紅色水果、微酸，尾韻帶辛香焦糖。",
+  use:"全方位：摩卡、熱可可、布朗尼都穩。",
+  pro:"果香與焦糖感兼具，大眾接受度高。",con:"個性比曼哥羅溫和，辨識度較低。",
+  r:[2.5,3,2.5,2.5,3.5],src:"評估",price:null,psrc:"待詢價",link:"https://www.treasurefoods.com.tw/portfolio-2/pinterest-list/45-riachuelo-70-plantation-dark-chocolate"},
+{t:"單品",fl:"李子、黃色水果",mo:"溫和果香",ps:"ref",b:"cz",name:"拉谷納莊園黑巧克力",en:"La Laguna 70% · Guatemala",pct:"70%",cat:["單一莊園"],pack:"元寶 #20480 · 3kg（依原廠包裝）",
+  notes:"李子、黃色水果與烤可可。",
+  use:"配中美洲豆的季節飲品、塔類甜點。",
+  pro:"果香圓潤、酸度溫和。",con:"資料較少，進貨前建議索樣。",
+  r:[2.5,3,2.5,2.5,3.5],src:"評估",price:null,psrc:"待詢價",link:"https://www.treasurefoods.com.tw/portfolio-2/pinterest-list/43-laguna-70-plantation-dark-chocolate"},
+{t:"混調",fl:"紅莓、木質、甘草",mo:"可可為主",ps:"ref",b:"cz",name:"卡亞碧黑巧克力",en:"Kayambe Dark 72%",pct:"72%",cat:["混調"],pack:"元寶 #20067 · 3kg",
+  notes:"強烈可可香中帶木質與甘草，紅色莓果酸，香氣與甜度平衡。",
+  use:"日常摩卡基底，要一點莓果酸又不想太貴時。",
+  pro:"混調款，批次穩定，可當每日用。",con:"果香屬點綴，可可感才是主調。",
+  r:[2.5,2.5,2.5,3,4],src:"評估",price:null,psrc:"待詢價",link:"https://www.treasurefoods.com.tw/portfolio-2/pinterest-list/53-kayambe-dark-72"},
+{t:"可可糊",fl:"果酸、純可可",mo:"無糖重苦",ps:"ref",b:"cz",name:"曼哥羅莊園可可糊",en:"Mangaro Cocoa Mass 100%",pct:"100%",cat:["可可糊","無糖"],pack:"元寶 #20812",
+  notes:"同曼哥羅莊園豆，未加糖，果酸與苦味最原始。",
+  use:"自調甜度的熱可可、無糖可可濃縮；配合自家糖漿控甜。",
+  pro:"甜度完全自己控，風味最純。",con:"純苦不好直接用，需要配方與糖度管理。",
+  r:[4,4,0,4.5,4.5],src:"評估",price:null,psrc:"待詢價",link:"https://www.treasurefoods.com.tw/portfolio-2/pinterest-list/61-mangaro"},
+{t:"可可粉",fl:"純可可",mo:"無糖、高脂細緻",ps:"ref",b:"cz",name:"頂級可可粉",en:"Cluizel Cocoa Powder",pct:"100%",cat:["無糖","高脂 21%"],pack:"元寶 #21005 · 3kg",
+ notes:"元寶官網：純可可粉、粉末細緻，標示 21% 高脂。是否鹼化未公開。",use:"無糖可可牛奶、甜點撒粉；先調膏再拉奶。",
+ pro:"規格與 Valrhona 同級，可三家盲測比較。",con:"3kg 大包；鹼化與否需向元寶確認。",r:[1,1,0,3,4.5],src:"評估",price:null,psrc:"待詢價",link:"https://www.treasurefoods.com.tw/portfolio-2/pinterest-list/63-cocoa-powder"},
+{t:"混調",fl:"純可可、黑醋栗",mo:"微酸、高流動",ps:"ref",b:"cb",name:"歐可亞黑巧克力",en:"Ocoa 70% · Côte d'Ivoire",pct:"70%",cat:["混調","次選"],pack:"聯馥 · 1kg／5kg 鈕扣",
+  notes:"官方：純可可味、微酸，果香 2 分；建議搭黑醋栗、西洋梨、杏桃。",
+  use:"要一點果酸但以可可為主的日常摩卡、淋面。",
+  pro:"流動性高、好淋面；1kg 與 5kg 都有。",con:"果香屬輕微，不是主打果香的選擇。",
+  r:[1.5,2,2,3.5,4],src:"官方四軸＋甜度評估",price:null,psrc:"待詢價",link:"https://www.gourmetspartner.com/ec99/rwd1163/product.asp?prodid=cacc1650"},
+{t:"可可粉",fl:"濃郁可可",mo:"無糖、高脂好溶",ps:"ref",b:"cb",name:"防潮可可粉（Extra Brute）",en:"Cocoa Powder Extra Brute 22–24%",pct:"100%",cat:["無糖","鹼化"],pack:"聯馥 1kg",
+ notes:"原廠 Extra Brute：100% 鹼化可可、可可脂 22–24%，紅棕色。聯馥商品名為「防潮可可粉」。",use:"無糖可可牛奶（先調膏再拉奶）、提拉米蘇撒粉。",
+ pro:"脂肪最高、口感最醇厚，規格接近 Valrhona。",con:"名稱叫「防潮」容易被當成撒粉專用，跟夥伴說明是同一款純可可粉。",r:[1,1,0,3,4.5],src:"評估",price:null,psrc:"待詢價",link:"https://www.gourmetspartner.com/ec99/rwd1163/product.asp?prodid=cacc1010"},
+{t:"單品",fl:"紅莓果香",mo:"明亮酸、甜苦平衡",ps:"ref",b:"vr",name:"孟加里巧克力鈕扣",en:"Manjari 64% · Madagascar",pct:"64%",cat:["單一產區","經典款"],pack:"開元 · 3kg 鈕扣",
+  notes:"紅莓果香與明亮酸，輕微可可苦，尾韻莓果與微酸。原廠建議搭黑醋栗、蔓越莓、覆盆子、酸櫻桃。",
+  use:"果香摩卡、莓果熱可可、甘納許，最不容易失手的主力。",
+  pro:"果香辨識度最高、64% 甜苦平衡；台灣甜點師熟悉，好溝通。",con:"知名度高，同業也常用，差異化要靠配方。",
+  r:[4,4.5,3,2,3],src:"評估",price:null,psrc:"待詢價",link:"https://www.creation.com.tw/tw/product/show.php?num=69"},
+{t:"單品",fl:"柑橘、黃色水果",mo:"輕快微酸",ps:"ref",b:"vr",name:"塔諾里巧克力鈕扣",en:"Taïnori 64% · Dominican Rep.",pct:"64%",cat:["單一產區"],pack:"開元 · 3kg 鈕扣",
+  notes:"天然水果微酸，柑橘與黃色水果起頭，接乾果香，烤麵包餘韻。",
+  use:"柑橘調飲品（橙皮摩卡）、配中淺焙豆。",
+  pro:"酸得輕快、不刺激，牛奶飲品裡依然清楚。",con:"比孟加里溫和，要強烈莓果感選孟加里。",
+  r:[3,3.5,3,2,3],src:"評估",price:null,psrc:"待詢價",link:"https://www.creation.com.tw/tw/product/show.php?num=70"},
+{t:"單品",fl:"熟果、香草、薄荷",mo:"柔和低酸",ps:"ref",b:"vr",name:"卡林格巧克力鈕扣",en:"Kalingo 65% · Grenada",pct:"65%",cat:["單一產區"],pack:"開元 · 3kg 鈕扣",
+  notes:"熟果香配香草豆甜感，帶一點薄荷清涼。原廠建議搭百香果、杏桃、椰子。",
+  use:"熱帶水果飲品、椰奶可可、冰品。",
+  pro:"熟果＋香草，大眾最好入口的果香款。",con:"酸度低，愛酸的人會覺得不夠「果」。",
+  r:[2,3,3,2,3],src:"評估",price:null,psrc:"待詢價",link:"https://www.valrhona.com/en/our-products/for-professionals/chocolate-co/couverture-chocolates/single-origin/dark-chocolate-kalingo-65"},
+{t:"混調",fl:"苦味、花果、糖蜜",mo:"重苦",ps:"ref",b:"vr",name:"瓜納拉巧克力鈕扣",en:"Guanaja 70%",pct:"70%",cat:["混調","次選"],pack:"開元 · 3kg 鈕扣",
+  notes:"苦味突出，帶花香與果香。",
+  use:"要苦甜感又帶一點花果的經典摩卡。",
+  pro:"Valrhona 招牌款，品質穩定。",con:"苦味主導，果香是配角。",
+  r:[2,2.5,2,3.5,4],src:"評估",price:null,psrc:"待詢價",link:"https://www.creation.com.tw/tw/product/show.php?num=57"},
+{t:"單品",fl:"果香微酸、丹寧",mo:"奶甜",ps:"ref",b:"vr",name:"白希比牛奶巧克力鈕扣",en:"Bahibé 46% · Dominican Rep.",pct:"46%",cat:["牛奶巧克力","單一產區"],pack:"開元 · 3kg 鈕扣",
+  notes:"Valrhona 牛奶系可可膏最高，果香微酸、淡淡丹寧。",
+  use:"果香牛奶可可、兒童友善熱飲、奶蓋基底。",
+  pro:"唯一帶果香的牛奶巧克力，甜度高好入口。",con:"本身已含乳粉與糖，配方要減糖。",
+  r:[2,2.5,4,1,2.5],src:"評估",price:null,psrc:"待詢價",link:"https://www.creation.com.tw/tw/product/show.php?num=72"},
+{t:"配方",fl:"烤覆盆子、莓果酸",mo:"甜、粉紅色",ps:"ref",b:"vr",name:"覆盆子奇想",en:"Inspiration Raspberry",pct:"可可脂 36%",cat:["水果調溫可可脂","配方","無人工色素"],pack:"開元 · 3kg（依原廠包裝）",
+  notes:"糖、可可脂、覆盆子粉（約 11.5%）；烤覆盆子香接莓果酸，天然粉紅色。",
+  use:"覆盆子白可可拿鐵、奶蓋、杯緣裝飾、甜點淋面。",
+  pro:"一包取代糖漿＋色素；操作方式同一般巧克力。",con:"甜度高，需搭酸或苦平衡；不含可可固形物，沒有巧克力味。",
+  r:[3.5,5,4.5,0,0],src:"評估",price:null,psrc:"待詢價",link:"https://www.creation.com.tw/tw/product/show.php?num=1170"},
+{t:"配方",fl:"草莓",mo:"甜、粉紅色",ps:"ref",b:"vr",name:"草莓奇想",en:"Inspiration Strawberry",pct:"可可脂",cat:["水果調溫可可脂","配方"],pack:"開元 · 3kg 袋",
+  notes:"以草莓果汁粉調製，無防腐劑、人工色素與香料。",
+  use:"草莓牛奶可可、季節限定草莓拿鐵。",
+  pro:"草莓季商品不用等鮮果，品質穩定。",con:"保存期限較短（官網約 10 個月）。",
+  r:[2.5,5,4.5,0,0],src:"評估",price:null,psrc:"待詢價",link:"https://www.creation.com.tw/tw/product/show.php?num=122"},
+{t:"配方",fl:"百香果",mo:"高酸甜",ps:"ref",b:"vr",name:"百香果奇想",en:"Inspiration Passion Fruit",pct:"可可脂",cat:["水果調溫可可脂","配方"],pack:"開元 · 規格待確認",
+  notes:"以百香果製成的水果調溫可可脂，熱帶果酸明亮。",
+  use:"百香果白可可、夏季冰飲、配卡林格做熱帶巧克力。",
+  pro:"酸甜感強，冰飲裡也不會被稀釋掉。",con:"甜度高，配方要減糖。",
+  r:[4.5,5,4,0,0],src:"評估",price:null,psrc:"待詢價",link:""},
+{t:"配方",fl:"柚子",mo:"清香微酸",ps:"ref",b:"vr",name:"柚子奇想",en:"Inspiration Yuzu",pct:"可可脂",cat:["水果調溫可可脂","配方"],pack:"開元 · 規格待確認",
+  notes:"柚子的清香與酸，日系柑橘調。",
+  use:"柚子白可可、配日式甜點或茶飲。",
+  pro:"柑橘系少有的天然選擇，和日系菜單很合。",con:"風味較細，與深焙咖啡搭配容易被蓋掉。",
+  r:[4,4.5,4,0.5,0],src:"評估",price:null,psrc:"待詢價",link:""},
+{t:"可可粉",fl:"濃郁可可",mo:"無糖、紅棕好溶",ps:"tw",b:"vr",name:"頂級可可粉",en:"Valrhona Cocoa Powder",pct:"100%",cat:["無糖","鹼化","可可脂 21%"],pack:"開元 1kg×3",
+ notes:"100% 可可、可可脂 21%、碳酸鉀鹼化，天然紅棕色。",use:"無糖可可牛奶首選，搭燕麥奶最容易被接受。",
+ pro:"好溶、醇厚，沒有糖也不水。",con:"單價比 Hershey's 高約 30%，每杯差約 NT$3。",r:[1,1,0,3,4.5],src:"評估",price:1.40,psrc:"蝦皮零售 1kg NT$1,400",link:"https://www.creation.com.tw/tw/product/show.php?num=92"}
+];
+const VN={cz:"元寶",cb:"聯馥",vr:"開元"};
+const BR={cz:"Cluizel",cb:"Cacao Barry",vr:"Valrhona"};
+const AX=["酸","果香","甜","苦","可可"];
+const POWDER=["可可粉","可可粒","可可糊"];
+function radar(v){
+  const cx=80,cy=82,R=56,pt=(i,r)=>{const a=-Math.PI/2+i*2*Math.PI/5;return[cx+r*Math.cos(a),cy+r*Math.sin(a)]};
+  let g="";
+  for(let l=1;l<=5;l++)g+=`<polygon points="${AX.map((_,i)=>pt(i,R*l/5).join(",")).join(" ")}" fill="none" stroke="var(--grid)" stroke-width="${l===5?1.2:.6}"/>`;
+  AX.forEach((_,i)=>{const[x,y]=pt(i,R);g+=`<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="var(--grid)" stroke-width=".6"/>`});
+  g+=`<polygon points="${v.map((x,i)=>pt(i,R*x/5).join(",")).join(" ")}" fill="var(--radar-fill)" stroke="var(--berry)" stroke-width="1.8" stroke-linejoin="round"/>`;
+  v.forEach((x,i)=>{const[px,py]=pt(i,R*x/5);g+=`<circle cx="${px}" cy="${py}" r="2.4" fill="var(--berry)"/>`});
+  AX.forEach((a,i)=>{const[x,y]=pt(i,R+15);g+=`<text x="${x}" y="${y+4}" text-anchor="middle" font-size="11" fill="var(--ink)">${a} <tspan fill="var(--muted)" font-size="9.5">${v[i]}</tspan></text>`});
+  return `<svg viewBox="0 0 160 168" role="img" aria-label="風味五角圖 ${AX.map((a,i)=>a+v[i]).join("、")}">${g}</svg>`;
+}
+const short=n=>n.replace(/(莊園)?(調溫)?(黑|苦甜|牛奶)?巧克力(鈕扣)?$/,"")||n;
+function row(d,i){
+  const price=d.price?`<div class="r2">${d.price.toFixed(2)}/g<small class="${d.ps==="tw"?"s-tw":"s-ref"}">${d.ps==="tw"?"市調":"代理"}</small></div>`:`<div class="r2 ask">詢價</div>`;
+  return `<details id="item-${i}">
+  <summary>
+    <div class="l1"><span class="type ${d.t==="混調"?"t-mix":""}">${d.t}</span><span class="brand">${BR[d.b]}</span><span class="pct">${d.pct}</span><span>${short(d.name)}</span>${cart[i]?`<span class="inc">已選 ${cart[i]}</span>`:""}</div>
+    <div class="r1">${VN[d.b]}</div>
+    <div class="l2"><b>${d.fl}</b> · ${d.mo}</div>
+    ${price}
+  </summary>
+  <div class="detail">
+    <div class="en">${d.link?`<a href="${d.link}" target="_blank" rel="noopener"><strong>${d.name}</strong></a>`:`<strong>${d.name}</strong>`} · ${d.en}</div>
+    <div class="tags">${d.cat.map(c=>`<span class="tag">${c}</span>`).join("")}<span class="tag">${d.pack}</span></div>
+    <div class="grid"><div class="radar">${radar(d.r)}<div class="src">${d.src}</div></div>
+    <div><dl>
+      <dt>風味</dt><dd>${d.notes}</dd>
+      <dt>吧台應用</dt><dd>${d.use}</dd>
+      <dt>價格來源</dt><dd>${d.psrc}</dd>
+      ${d.link?`<dt>商品頁</dt><dd><a href="${d.link}" target="_blank" rel="noopener">開啟代理／原廠頁</a></dd>`:""}
+    </dl></div></div>
+    <div class="addrow"><button class="btn${cart[i]?" ghost":""}" type="button" data-add="${i}">${cart[i]?`已在採購單（${cart[i]}）・再加 1`:"加入採購單"}</button></div>
+    <div class="pc"><div class="ok"><b>優點</b>${d.pro}</div><div class="ng"><b>注意</b>${d.con}</div></div>
+  </div></details>`;
+}
+let V="all",T="all",S=0;
+function render(){
+  let xs=D.map((d,i)=>[d,i]).filter(([d])=>(V==="all"||d.b===V)&&(T==="all"||(T==="粉粒糊"?POWDER.includes(d.t):d.t===T)));
+  if(S===1)xs.sort((a,b)=>(a[0].price??99)-(b[0].price??99));
+  if(S===2)xs.sort((a,b)=>(b[0].price??-1)-(a[0].price??-1));
+  document.getElementById("list").innerHTML=xs.map(([d,i])=>row(d,i)).join("");
+  document.getElementById("count").textContent=`共 ${xs.length} 項`+(S?`，依價格${S===1?"低→高":"高→低"}排序（詢價項目排最後）`:"");
+}
+document.getElementById("f-brand").onchange=e=>{V=e.target.value;render()};
+document.getElementById("f-type").onchange=e=>{T=e.target.value;render()};
+document.getElementById("f-sort").onchange=e=>{S=+e.target.value;render()};
+
+let cart={};try{cart=JSON.parse(localStorage.getItem("pallas-cart")||"{}")}catch(e){}
+function saveCart(){try{localStorage.setItem("pallas-cart",JSON.stringify(cart))}catch(e){}updateBar()}
+function updateBar(){const n=Object.values(cart).reduce((a,b)=>a+b,0);const bar=document.getElementById("cartbar");bar.hidden=!n||VIEW!=="list";document.getElementById("cartcount").textContent=`採購單：${Object.keys(cart).length} 項，共 ${n} 包`}
+function openSet(){return new Set([...document.querySelectorAll("#list details[open]")].map(d=>d.id))}
+function rerenderKeep(){const o=openSet();render();o.forEach(id=>{const el=document.getElementById(id);if(el)el.open=true})}
+document.getElementById("list").addEventListener("click",e=>{const b=e.target.closest("[data-add]");if(!b)return;const i=b.dataset.add;cart[i]=(cart[i]||0)+1;saveCart();rerenderKeep()});
+const wt=p=>{const m=p.match(/\d+(?:\.\d+)?\s?k?g(?:\s?[×x]\s?\d+)?(?:\s?[／\/]\s?\d+(?:\.\d+)?\s?k?g)*/i);return m?m[0]:""};
+function lines(){return Object.entries(cart).map(([i,q])=>{const d=D[i];return {i:+i,name:d.name,en:d.en,brand:BR[d.b],vendor:VN[d.b],type:d.t,pct:d.pct,pack:d.pack,qty:q}})}
+function textOf(){const L=lines();const nt=document.getElementById("o-note").value.trim();
+  const G=["cz","cb","vr"].map(b=>L.filter(x=>D[x.i].b===b)).filter(g=>g.length);
+  return `【幻猻家 巧克力採購單】\n`+G.map(g=>`\n${g[0].brand}／${g[0].vendor}\n`+g.map((x,k)=>`${k+1}. ${x.name} ${x.pct}｜${x.qty} 包${wt(x.pack)?`（${wt(x.pack)}）`:""}`).join("\n")).join("\n")+(nt?"\n":"")+(nt?`\n備註：${nt}`:"")}
+function renderOrder(){
+  const L=lines(),box=document.getElementById("olist");
+  box.innerHTML=L.length?L.map(x=>`<div class="oitem"><div><div class="nm">${x.brand} · ${x.name}</div><div class="sub">${x.pct} · ${x.vendor}${wt(x.pack)?" · "+wt(x.pack):""}</div><button class="rm" type="button" data-rm="${x.i}">移除</button></div>
+   <div class="qty"><button type="button" data-q="${x.i}" data-d="-1" aria-label="減少">−</button><output>${x.qty}</output><button type="button" data-q="${x.i}" data-d="1" aria-label="增加">＋</button></div></div>`).join(""):`<p class="empty">採購單是空的。回到清單，展開品項後按「加入採購單」。</p>`;
+  document.getElementById("oform").hidden=!L.length;
+  updLine();
+}
+document.getElementById("olist").addEventListener("click",e=>{const q=e.target.closest("[data-q]"),r=e.target.closest("[data-rm]");
+  if(q){const i=q.dataset.q;cart[i]=Math.max(0,(cart[i]||0)+ +q.dataset.d);if(!cart[i])delete cart[i]}
+  else if(r){delete cart[r.dataset.rm]}else return;saveCart();renderOrder()});
+
+/* ===== 成本試算：資料快照自「幻猻家 食譜成本表」2026-11-14 ===== */
+/* 店內標準：先用這支手機上次下載的版本，再向 Google 試算表抓最新 */
+const API="";  // Apps Script 網頁應用程式網址
+const tms=x=>{const t=Date.parse(x&&x.updated);return isNaN(t)?0:t};
+let STD=JSON.parse(document.getElementById("std").textContent);
+try{const c=JSON.parse(localStorage.getItem("pallas-std")||"null");if(c&&c.def&&tms(c)>tms(STD))STD=c}catch(e){}
+let COST_DEF=STD.def;
+const ymd=x=>{const d=new Date(x);if(isNaN(d))return"";const z=n=>String(n).padStart(2,"0");return `${d.getFullYear()}/${z(d.getMonth()+1)}/${z(d.getDate())}`};
+function setUpd(){const t=document.getElementById("upd-t");t.dateTime=STD.updated;t.textContent=ymd(STD.updated)}
+setUpd();
+const COST_KEY="pallas-cost-v3";
+const clone=o=>JSON.parse(JSON.stringify(o));
+let C;try{const sv=JSON.parse(localStorage.getItem(COST_KEY)||"null");C=sv&&sv.v===STD.updated?sv.C:null}catch(e){C=null}
+if(!C||!C.ing||!C.prep||!C.drinks)C=clone(COST_DEF);
+Object.values(C.prep).forEach(p=>{if(p.make==null)p.make=p.batch});
+const saveCost=()=>{try{localStorage.setItem(COST_KEY,JSON.stringify({v:STD.updated,C}))}catch(e){}};
+const getP=(o,p)=>p.split(".").reduce((a,k)=>a==null?a:a[k],o);
+const setP=(o,p,v)=>{const ks=p.split(".");const last=ks.pop();ks.reduce((a,k)=>a[k],o)[last]=v};
+const money=n=>"$"+(Math.round(n*10)/10).toFixed(1);
+const unitCost=(S,k)=>{const g=S.ing[k];return g&&g.pack>0?g.price/g.pack:0};
+function prepParts(S,k){const p=S.prep[k];if(!p)return{food:0,lab:0,cost:0};
+  const food=p.items.reduce((a,x)=>a+(x.per==="batch"?(p.batch>0?x.qty/p.batch:0):x.qty)*unitCost(S,x.ing),0);
+  const lab=p.batch>0?p.mins/p.batch*S.labor:0;return{food,lab,cost:food+lab}}
+function itemUnit(S,x){return x.t==="i"?unitCost(S,x.ref):x.t==="p"?prepParts(S,x.ref).cost:S.labor}
+function itemName(S,x){return x.t==="i"?(S.ing[x.ref]||{}).name:x.t==="p"?(S.prep[x.ref]||{}).name:"出杯人力"}
+function itemUnitLabel(S,x){return x.t==="i"?(S.ing[x.ref]||{}).unit:x.t==="p"?"份":"分"}
+function drinkTotal(S,d){return d.items.reduce((a,x)=>a+x.qty*itemUnit(S,x),0)}
+function defDrink(id){return COST_DEF.drinks.find(d=>d.id===id)}
+function fld(path,val,unit,label){return `<label class="fld"><input inputmode="decimal" autocomplete="off" id="c-${path.replace(/\./g,"-")}" data-p="${path}" value="${val}" aria-label="${label}"><span class="u">${unit||""}</span></label>`}
+const GRIP=`<svg viewBox="0 0 10 16" aria-hidden="true"><circle cx="2" cy="2" r="1.5"/><circle cx="8" cy="2" r="1.5"/><circle cx="2" cy="8" r="1.5"/><circle cx="8" cy="8" r="1.5"/><circle cx="2" cy="14" r="1.5"/><circle cx="8" cy="14" r="1.5"/></svg>`;
+let SUB;try{SUB=localStorage.getItem("pallas-calc-sub")}catch(e){}
+function subs(){return [...C.drinks.map(d=>({id:"d:"+d.id,name:d.name})),{id:"prep",name:"備料"}]}
+function addSelect(id,label,withPrep){return `<div class="c-add"><select id="${id}" aria-label="${label}"><option value="">＋ 加一項…</option><optgroup label="食材">${Object.entries(C.ing).map(([k,g])=>`<option value="i:${k}">${g.name}</option>`).join("")}</optgroup>${withPrep?`<optgroup label="備料">${Object.entries(C.prep).map(([k,p])=>`<option value="p:${k}">${p.name}</option>`).join("")}</optgroup><optgroup label="其他"><option value="l:labor">出杯人力</option></optgroup>`:""}</select><button class="btn ghost" type="button" data-add="${id}">加入</button></div>`}
+function cRow(listPath,ii,name,sub,input,outKey,extra){return `<div class="c-row${extra?" c-prow":""}" data-idx="${ii}">
+  <button class="grip" type="button" aria-label="拖移排序：${name}（可用上下鍵）">${GRIP}</button>
+  <div class="nm" title="${name}${sub.title?" · "+sub.title:""}">${name}<small data-o="${outKey}.u"></small>${sub.note?`<small>${sub.note}</small>`:""}</div>
+  ${input}${extra||""}<div class="sub" data-o="${outKey}.sub"></div>
+  <button class="rmx" type="button" data-rm="${listPath}.${ii}" aria-label="移除 ${name}">×</button></div>`}
+function costRender(){
+  const v=document.getElementById("view-calc");
+  const list=subs();if(!list.some(x=>x.id===SUB))SUB=list[0].id;
+  let body="";
+  if(SUB.startsWith("d:")){const di=C.drinks.findIndex(d=>"d:"+d.id===SUB),d=C.drinks[di];
+    body=`<div class="c-card">
+    <div class="c-head"><h3>${d.name}</h3>${fld(`drinks.${di}.price`,d.price,"售價 $",d.name+" 售價")}</div>
+    <div class="kpis">
+      <div class="kpi"><span>總成本</span><b data-o="d${di}.total"></b><small data-o="d${di}.delta"></small></div>
+      <div class="kpi"><span>成本率</span><b data-o="d${di}.rate"></b><small data-o="d${di}.rdelta"></small></div>
+      <div class="kpi"><span>毛利</span><b data-o="d${di}.margin"></b><small>&nbsp;</small></div>
+    </div>
+    <div class="c-rows" data-list="drinks.${di}.items">${d.items.map((x,ii)=>cRow(`drinks.${di}.items`,ii,itemName(C,x),{note:x.note,title:x.note},fld(`drinks.${di}.items.${ii}.qty`,x.qty,itemUnitLabel(C,x),d.name+" "+itemName(C,x)),`d${di}.i${ii}`)).join("")}</div>
+    ${addSelect("c-add-d"+di,"加入項目到"+d.name,true)}
+  </div>`}
+  else body=Object.entries(C.prep).map(([k,p])=>`<div class="c-card">
+    <div class="c-head"><h3>${p.name}</h3><div class="sub" style="font-family:var(--f-mono);font-weight:600" data-o="p.${k}.cost"></div></div>
+    <div class="c-meta">${fld(`prep.${k}.batch`,p.batch,"份/批",p.name+" 批次份數")}${fld(`prep.${k}.mins`,p.mins,"分/批",p.name+" 批次工時")}<label class="fld mk-in">備料<input inputmode="decimal" autocomplete="off" id="c-prep-${k}-make" data-p="prep.${k}.make" value="${p.make}" aria-label="${p.name} 備料份數"><span class="u">份</span></label></div>
+    <div class="c-foot"><p data-o="p.${k}.split"></p></div>
+    <div class="c-hdr"><span></span><span>食材</span><span>配方</span><span>備料</span><span>小計</span><span></span></div>
+    <div class="c-rows" data-list="prep.${k}.items">${p.items.map((x,ii)=>cRow(`prep.${k}.items`,ii,C.ing[x.ing].name,{note:x.per==="batch"?"每批":""},fld(`prep.${k}.items.${ii}.qty`,x.qty,C.ing[x.ing].unit,p.name+" "+C.ing[x.ing].name+(x.per==="batch"?"（每批）":"")),`p.${k}.i${ii}`,`<div class="mk" data-o="p.${k}.i${ii}.mk"></div>`)).join("")}</div>
+    ${addSelect("c-add-p-"+k,"加入食材到"+p.name,false)}
+  </div>`).join("");
+  v.innerHTML=`<div class="c-top"><div class="stabs" role="group" aria-label="試算品項">${list.map(x=>`<button class="stab" type="button" data-sub="${x.id}" aria-pressed="${x.id===SUB}">${x.name}</button>`).join("")}</div>
+    <div class="c-btns">${API?`<button class="btn go" type="button" id="c-pub"${dirty()?"":" disabled"}>更新</button>`:""}<button class="btn danger" type="button" id="c-reset">歸零</button></div></div>
+  <div id="c-msg" role="status"></div>
+  ${body}
+  <div class="c-foot"><p>改框裡的數字，成本馬上重算。改過的格子會變色，只存在這支手機。「歸零」會把試算與食材全部還原成店內標準；「更新」會把目前數字設為全店新標準，所有人的手機都會跟著更新。</p><p>按住左側把手可拖移排序；成本率＝總成本÷售價，含備料與出杯人力。</p></div>`;
+  costCalc();
+}
+function ingRender(){
+  document.getElementById("view-ing").innerHTML=`
+  <div class="c-card"><div class="c-head"><h3>人力成本</h3>${fld("labor",C.labor,"$/分","人力成本 $/分")}</div></div>
+  <div class="c-card c-ing"><h3>食材單價</h3>
+    ${Object.entries(C.ing).map(([k,g])=>`<div class="c-row">
+      <div class="nm">${g.name}${g.note?`<small>${g.note}</small>`:""}</div>
+      <div class="vals">${fld(`ing.${k}.price`,g.price,"進價 $",g.name+" 進價")}${fld(`ing.${k}.pack`,g.pack,g.unit+"/包",g.name+" 包裝量")}<span class="uc" data-o="ing.${k}.uc"></span></div></div>`).join("")}
+  </div>
+  <div class="c-foot"><p>這裡改的進價與包裝量，也會在試算頁按「更新」時一起設為全店標準。</p><p>標準最後更新：${ymd(STD.updated)}${STD.by?"（"+STD.by+"）":""}</p></div>`;
+  costCalc();
+}
+const fq=n=>{const a=Math.abs(n);const r=a>=100?Math.round(n):a>=10?Math.round(n*10)/10:Math.round(n*100)/100;return String(r)};
+function costCalc(){
+  const o=(k,t,cls)=>{const el=document.querySelector(`[data-o="${k}"]`);if(el){el.textContent=t;if(cls!==undefined)el.className=cls}};
+  Object.keys(C.ing).forEach(k=>o(`ing.${k}.uc`,"$"+unitCost(C,k).toFixed(2)+"/"+C.ing[k].unit));
+  Object.entries(C.prep).forEach(([k,p])=>{const pp=prepParts(C,k);o(`p.${k}.cost`,money(pp.cost)+"/份");o(`p.${k}.split`,`每份：食材 ${money(pp.food)} ＋ 人力 ${money(pp.lab)}｜備料 ${fq(p.make||0)} 份 ≈ ${money(pp.cost*(p.make||0))}`);
+    p.items.forEach((x,ii)=>{const per=x.per==="batch"?(p.batch>0?x.qty/p.batch:0):x.qty;o(`p.${k}.i${ii}.u`,"$"+unitCost(C,x.ing).toFixed(2)+"/"+C.ing[x.ing].unit+(x.per==="batch"?` · 每份 ${Math.round(per*100)/100}${C.ing[x.ing].unit}`:""));o(`p.${k}.i${ii}.sub`,money(per*unitCost(C,x.ing)));o(`p.${k}.i${ii}.mk`,fq(per*(p.make||0))+C.ing[x.ing].unit)})});
+  C.drinks.forEach((d,di)=>{const t=drinkTotal(C,d),dd=defDrink(d.id),t0=dd?drinkTotal(COST_DEF,dd):t;
+    o(`d${di}.total`,money(t));const df=t-t0;o(`d${di}.delta`,Math.abs(df)<0.05?`標準 ${money(t0)}`:`${df>0?"+":"−"}${money(Math.abs(df))}（標準 ${money(t0)}）`,Math.abs(df)<0.05?"":df>0?"up":"down");
+    const r=d.price>0?t/d.price:0,r0=dd&&dd.price>0?t0/dd.price:r;o(`d${di}.rate`,d.price>0?(r*100).toFixed(1)+"%":"—");
+    const rd=(r-r0)*100;o(`d${di}.rdelta`,Math.abs(rd)<0.05?`標準 ${(r0*100).toFixed(1)}%`:`${rd>0?"+":"−"}${Math.abs(rd).toFixed(1)} 點`,Math.abs(rd)<0.05?"":rd>0?"up":"down");
+    o(`d${di}.margin`,d.price>0?money(d.price-t):"—");
+    d.items.forEach((x,ii)=>{const u=itemUnit(C,x);o(`d${di}.i${ii}.u`,"$"+u.toFixed(2)+"/"+itemUnitLabel(C,x));o(`d${di}.i${ii}.sub`,money(x.qty*u))})});
+  document.querySelectorAll(".cost input[data-p]").forEach(el=>{el.classList.toggle("changed",isChanged(el.dataset.p))});
+  const pb=document.getElementById("c-pub");if(pb)pb.disabled=!dirty();
+}
+function defOf(path){let m=path.match(/^drinks\.(\d+)\.items\.(\d+)\.qty$/);
+  if(m){const d=C.drinks[+m[1]],x=d.items[+m[2]],dd=defDrink(d.id);if(!dd)return undefined;const dx=dd.items.find(y=>y.t===x.t&&y.ref===x.ref);return dx?dx.qty:undefined}
+  m=path.match(/^prep\.(\w+)\.items\.(\d+)\.qty$/);
+  if(m){const x=C.prep[m[1]].items[+m[2]],dp=COST_DEF.prep[m[1]];if(!dp)return undefined;const dx=dp.items.find(y=>y.ing===x.ing);return dx?dx.qty:undefined}
+  m=path.match(/^drinks\.(\d+)\.(.*)$/);if(m){const dd=defDrink(C.drinks[+m[1]].id);return dd?getP(dd,m[2]):undefined}
+  return getP(COST_DEF,path)}
+function isChanged(path){const a=getP(C,path),b=defOf(path);return b===undefined||Math.abs((+a||0)-(+b||0))>1e-9}
+function rerenderCost(){if(VIEW==="calc")costRender();else if(VIEW==="ing")ingRender()}
+document.querySelectorAll(".cost").forEach(sec=>{
+  sec.addEventListener("input",e=>{const el=e.target.closest("input[data-p]");if(!el)return;
+    const raw=el.value.replace(/,/g,"").trim();const n=raw===""?0:parseFloat(raw);if(isNaN(n))return;setP(C,el.dataset.p,n);saveCost();costCalc()});
+});
+document.getElementById("view-calc").addEventListener("click",e=>{
+  const st=e.target.closest("[data-sub]"),rm=e.target.closest("[data-rm]"),ad=e.target.closest("[data-add]");
+  if(st){SUB=st.dataset.sub;try{localStorage.setItem("pallas-calc-sub",SUB)}catch(err){}costRender();return}
+  if(rm){const parts=rm.dataset.rm.split(".");const ii=+parts.pop();getP(C,parts.join(".")).splice(ii,1);saveCost();costRender();return}
+  if(ad){const sel=document.getElementById(ad.dataset.add);if(!sel.value)return;const[t,ref]=sel.value.split(":");
+    const listEl=ad.closest(".c-card").querySelector(".c-rows");const arr=getP(C,listEl.dataset.list);
+    arr.push(listEl.dataset.list.startsWith("prep.")?{ing:ref,qty:1}:{t,ref,qty:1});saveCost();costRender();
+    const inp=document.getElementById("c-"+(listEl.dataset.list+"."+(arr.length-1)+".qty").replace(/\./g,"-"));if(inp){inp.focus();inp.select()}return}
+  if(e.target.id==="c-pub"){openPub();return}
+  if(e.target.id==="c-reset"){const b=e.target;if(!b.dataset.armed){b.dataset.armed="1";b.textContent="再按一次確認";setTimeout(()=>{if(b.isConnected){delete b.dataset.armed;b.textContent="歸零"}},3000);return}
+    C=clone(COST_DEF);saveCost();costRender();document.getElementById("c-msg").innerHTML=`<div class="msg ok">已還原成店內標準。</div>`;return}
+});
+/* 更新：把目前數字設為全店標準（寫進 Google 試算表） */
+const dirty=()=>JSON.stringify(C)!==JSON.stringify(COST_DEF);
+const cmsg=h=>{const m=document.getElementById("c-msg");if(m)m.innerHTML=h};
+function applyStd(std,note){STD=std;COST_DEF=std.def;try{localStorage.setItem("pallas-std",JSON.stringify(std))}catch(e){}
+  C=clone(COST_DEF);Object.values(C.prep).forEach(p=>{if(p.make==null)p.make=p.batch});saveCost();setUpd();rerenderCost();if(note)cmsg(note)}
+async function syncStd(){if(!API)return;try{const r=await fetch(API,{cache:"no-store"});const j=await r.json();
+  if(j&&j.ok&&j.std&&j.std.def&&tms(j.std)>tms(STD)){const lost=dirty();applyStd(j.std,`<div class="msg ok">已載入最新標準（${ymd(j.std.updated)}${j.std.by?"・"+j.std.by:""}）。${lost?"這支手機之前沒上傳的修改已被取代。":""}</div>`)}}catch(e){}}
+function openPub(){const m=document.getElementById("pub-modal");document.getElementById("pub-msg").textContent="";document.getElementById("pub-ok").disabled=false;
+  const pin=document.getElementById("pub-pin");pin.value="";try{document.getElementById("pub-by").value=localStorage.getItem("pallas-by")||""}catch(e){}
+  m.hidden=false;pin.focus()}
+function closePub(){document.getElementById("pub-modal").hidden=true}
+document.getElementById("pub-cancel").onclick=closePub;
+document.getElementById("pub-modal").addEventListener("click",e=>{if(e.target.id==="pub-modal")closePub()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!document.getElementById("pub-modal").hidden)closePub()});
+document.getElementById("pub-form").addEventListener("submit",async e=>{e.preventDefault();
+  const ok=document.getElementById("pub-ok"),msg=document.getElementById("pub-msg");
+  const pin=document.getElementById("pub-pin").value.trim(),by=document.getElementById("pub-by").value.trim();
+  if(!pin){msg.textContent="請輸入店內 PIN。";return}
+  try{localStorage.setItem("pallas-by",by)}catch(err){}
+  ok.disabled=true;msg.textContent="上傳中…";
+  const summary=C.drinks.map(d=>({name:d.name,total:Math.round(drinkTotal(C,d)*100)/100,price:d.price}));
+  let j;try{const r=await fetch(API,{method:"POST",body:JSON.stringify({pin,base:STD.updated,std:{by,def:C},summary})});j=await r.json()}
+  catch(err){msg.textContent="連不上資料庫，請確認網路後再試。";ok.disabled=false;return}
+  if(j.ok){closePub();applyStd(j.std,`<div class="msg ok">已更新為全店新標準。其他人重新打開或下拉重新整理就會看到。</div>`);return}
+  const M={bad_pin:"PIN 不對，請再確認。",locked:"PIN 錯太多次，請 10 分鐘後再試。",busy:"有人正在更新，請稍等幾秒再按。",
+    conflict:"剛好有人先更新了。已載入最新標準，請在新版本上再改一次。",bad_request:"資料格式有誤，請截圖給 Ben。"};
+  msg.textContent=M[j.code]||("上傳失敗（"+(j.code||"未知錯誤")+"）");
+  if(j.code==="conflict"&&j.std){setTimeout(()=>{closePub();applyStd(j.std,`<div class="msg">${M.conflict}</div>`)},1200);return}
+  ok.disabled=false});
+/* 拖移排序 */
+let DR=null;
+function moveItem(listPath,from,to){if(from===to)return;const arr=getP(C,listPath);const[it]=arr.splice(from,1);arr.splice(to,0,it);saveCost()}
+const calcEl=document.getElementById("view-calc");
+calcEl.addEventListener("pointerdown",e=>{const g=e.target.closest(".grip");if(!g)return;e.preventDefault();
+  const r=g.closest(".c-row"),list=r.parentElement;try{g.setPointerCapture(e.pointerId)}catch(err){}
+  DR={r,list,g,from:[...list.children].indexOf(r)};r.classList.add("dragging")});
+calcEl.addEventListener("pointermove",e=>{if(!DR)return;const y=e.clientY;
+  const others=[...DR.list.children].filter(x=>x!==DR.r);let before=null;
+  for(const x of others){const b=x.getBoundingClientRect();if(y<b.top+b.height/2){before=x;break}}
+  if(before){if(DR.r.nextElementSibling!==before)DR.list.insertBefore(DR.r,before)}else if(DR.list.lastElementChild!==DR.r)DR.list.appendChild(DR.r)});
+const endDrag=()=>{if(!DR)return;const to=[...DR.list.children].indexOf(DR.r);DR.r.classList.remove("dragging");const lp=DR.list.dataset.list,from=DR.from;DR=null;if(to!==from){moveItem(lp,from,to);costRender()}};
+calcEl.addEventListener("pointerup",endDrag);calcEl.addEventListener("pointercancel",endDrag);
+calcEl.addEventListener("keydown",e=>{const g=e.target.closest(".grip");if(!g||(e.key!=="ArrowUp"&&e.key!=="ArrowDown"))return;e.preventDefault();
+  const r=g.closest(".c-row"),list=r.parentElement,from=[...list.children].indexOf(r),to=from+(e.key==="ArrowUp"?-1:1);if(to<0||to>=list.children.length)return;
+  const lp=list.dataset.list;moveItem(lp,from,to);costRender();const ng=document.querySelector(`[data-list="${lp}"]`).children[to].querySelector(".grip");if(ng)ng.focus()});
+let VIEW="list";
+const VIEWS=["list","order","calc","ing"];
+function show(v){VIEW=v;VIEWS.forEach(x=>document.getElementById("view-"+x).hidden=x!==v);document.getElementById("foot").hidden=v!=="list";
+  const tab=v==="order"?"list":v;["list","calc","ing"].forEach(x=>{const t=document.getElementById("tab-"+x);if(x===tab)t.setAttribute("aria-current","page");else t.removeAttribute("aria-current")});
+  if(v==="order")renderOrder();else if(v==="calc")costRender();else if(v==="ing")ingRender();else rerenderKeep();updateBar();window.scrollTo(0,0)}
+const route=()=>{const h=location.hash;show(h==="#order"?"order":h==="#ing"?"ing":(h==="#buy"||h.startsWith("#item-"))?"list":"calc")};
+document.getElementById("opencart").onclick=()=>{location.hash="order"};
+document.getElementById("back").onclick=()=>{location.hash="buy"};
+window.addEventListener("hashchange",route);
+document.getElementById("copy").onclick=async()=>{const t=textOf(),box=document.getElementById("copybox");box.value=t;box.hidden=false;
+  try{await navigator.clipboard.writeText(t);document.getElementById("omsg").innerHTML=`<div class="msg ok">已複製。打開 LINE，貼給 Ben 就完成了。</div>`}catch(e){box.select();document.getElementById("omsg").innerHTML=`<div class="msg">無法自動複製，文字已選取，請長按複製。</div>`}};
+function updLine(){const l=document.getElementById("line");if(l)l.href="https://line.me/R/share?text="+encodeURIComponent(textOf())}
+document.getElementById("o-note").addEventListener("input",updLine);
+render();route();syncStd();
+/* 下拉更新 */
+(()=>{const el=document.getElementById("ptr"),tx=document.getElementById("ptr-t");let y0=null,pull=0,busy=false;const TH=70;
+  const set=(d,txt)=>{el.style.transform=`translate(-50%,${d-64}px)`;el.style.opacity=Math.min(1,d/40);if(txt)tx.textContent=txt};
+  const reset=()=>{el.classList.remove("pulling","run");el.style.transform="";el.style.opacity="";pull=0;y0=null};
+  addEventListener("touchstart",e=>{if(busy||DR||window.scrollY>0||e.touches.length>1||e.target.closest("input,select,textarea,.grip"))return;y0=e.touches[0].clientY},{passive:true});
+  addEventListener("touchmove",e=>{if(y0==null)return;const dy=e.touches[0].clientY-y0;if(dy<=0||window.scrollY>0){if(pull)reset();y0=dy<=0?y0:null;return}
+    pull=Math.min(120,dy*.5);el.classList.add("pulling");set(pull,pull>=TH?"放開更新":"下拉更新")},{passive:true});
+  addEventListener("touchend",()=>{if(y0==null&&!pull)return;if(pull>=TH){busy=true;el.classList.remove("pulling");el.classList.add("run");set(TH,"攪拌中…");
+      setTimeout(()=>{try{location.reload()}catch(e){}setTimeout(()=>{busy=false;reset();route()},2500)},900)}else reset();y0=null});
+  addEventListener("touchcancel",()=>{if(!busy)reset()});
+})();
+
+document.querySelectorAll("[data-go]").forEach(a=>a.addEventListener("click",e=>{
+  e.preventDefault();
+  let el=document.getElementById("item-"+a.dataset.go);
+  if(!el){V="all";T="all";document.getElementById("f-brand").value="all";document.getElementById("f-type").value="all";render();el=document.getElementById("item-"+a.dataset.go)}
+  el.open=true;
+  el.scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth",block:"start"});
+}));</script>
+</body>
+</html>
